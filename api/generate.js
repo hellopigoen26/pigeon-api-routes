@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import Anthropic from ''*';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', 'https://sendpigeon.uk');
