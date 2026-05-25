@@ -1,7 +1,6 @@
 import { Resend } from 'resend';
 
 function buildHtml(body, fromName) {
-  // Convert markdown bold to HTML and newlines to <br>
   const formatted = body
     .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#1A1916">$1</strong>')
     .replace(/\n/g, '<br>');
@@ -17,8 +16,6 @@ function buildHtml(body, fromName) {
         <!-- Body -->
         <tr><td style="background:#FFFFFF;border-radius:16px;padding:40px;border:1px solid #e8e4dc">
           <p style="font-size:15px;line-height:1.8;color:#1A1916;margin:0">${formatted}</p>
-
-          <!-- Divider -->
           <div style="margin-top:32px;border-top:1px solid #F0EDE6"></div>
         </td></tr>
 
@@ -27,7 +24,7 @@ function buildHtml(body, fromName) {
           <table cellpadding="0" cellspacing="0" style="margin:0 auto">
             <tr>
               <td style="padding-right:8px;vertical-align:middle">
-                <img src="https://sendpigeon.uk/pigeon-icon.png" width="18" height="18" style="display:block;opacity:0.6" alt="Pigeon">
+                <img src="https://sendpigeon.uk/pigeon-icon.png" width="22" height="22" style="display:block;opacity:0.7" alt="Pigeon">
               </td>
               <td style="vertical-align:middle">
                 <span style="font-size:12px;color:#A09C96">Sent with </span><a href="https://sendpigeon.uk" style="font-size:12px;color:#5B6E8F;text-decoration:none;font-weight:500">Pigeon</a><span style="font-size:12px;color:#A09C96"> &mdash; investor updates, written and delivered.</span>
