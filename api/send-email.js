@@ -1,14 +1,10 @@
 import { Resend } from 'resend';
 
-function buildHtml(body, fromName, company, logo) {
+function buildHtml(body, fromName) {
   // Convert markdown bold to HTML and newlines to <br>
   const formatted = body
     .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#1A1916">$1</strong>')
     .replace(/\n/g, '<br>');
-
-  const logoHtml = logo
-    ? `<img src="${logo}" style="max-height:36px;max-width:120px;object-fit:contain;display:block;margin-bottom:4px">`
-    : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -22,12 +18,8 @@ function buildHtml(body, fromName, company, logo) {
         <tr><td style="background:#FFFFFF;border-radius:16px;padding:40px;border:1px solid #e8e4dc">
           <p style="font-size:15px;line-height:1.8;color:#1A1916;margin:0">${formatted}</p>
 
-          <!-- Signature -->
-          <div style="margin-top:32px;padding-top:24px;border-top:1px solid #F0EDE6">
-            ${logoHtml}
-            <p style="font-size:13.5px;color:#524F4A;margin:0;line-height:1.6">${fromName}<br>
-            <span style="color:#A09C96">${company}</span></p>
-          </div>
+          <!-- Divider -->
+          <div style="margin-top:32px;border-top:1px solid #F0EDE6"></div>
         </td></tr>
 
         <!-- Pigeon footer -->
@@ -57,9 +49,9 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const { to, subject, body, fromName, company, logo } = req.body;
+  const { to, subject, body, fromName } = req.body;
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const htmlBody = buildHtml(body, fromName, company, logo);
+  const htmlBody = buildHtml(body, fromName);
   const { data, error } = await resend.emails.send({
     from: `${fromName} via Pigeon <updates@mail.sendpigeon.uk>`,
     to: to,
