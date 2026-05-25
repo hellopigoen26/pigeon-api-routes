@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   const { data, error } = await resend.emails.send({
     from: `${fromName} via Pigeon <updates@mail.sendpigeon.uk>`,
     to: to,
-    replyTo: replyTo ? replyTo : `${fromName} <updates@mail.sendpigeon.uk>`,
+    reply_to: replyTo || undefined,
     subject: subject,
     html: htmlBody,
     text: body,
