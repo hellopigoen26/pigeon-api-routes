@@ -44,17 +44,14 @@ export default async function handler(req, res) {
   const { to, subject, body, fromName, replyTo } = req.body;
   const resend = new Resend(process.env.RESEND_API_KEY);
   const htmlBody = buildHtml(body, fromName);
-
-  const emailPayload = {
+  const { data, error } = await resend.emails.send({
     from: `${fromName} via Pigeon <updates@mail.sendpigeon.uk>`,
     to: to,
+    replyTo: replyTo ? replyTo : `${fromName} <updates@mail.sendpigeon.uk>`,
     subject: subject,
     html: htmlBody,
     text: body,
-  };
-  if (replyTo) emailPayload.replyTo = replyTo;
-
-  const { data, error } = await resend.emails.send(emailPayload);
+  });
   if (error) return res.status(400).json({ error });
   res.status(200).json({ data });
 }
