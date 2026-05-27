@@ -1,3 +1,5 @@
+const pdfParse = require('pdf-parse');
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -23,33 +25,10 @@ export default async function handler(req, res) {
     if (!fileRes.ok) return res.status(404).json({ error: 'No pitch deck found' });
 
     const arrayBuffer = await fileRes.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
+    const buffer = Buffer.from(arrayBuffer);
     
-    // Extract readable text from PDF bytes
-    // PDFs contain readable text between stream markers
-    const decoder = new TextDecoder('latin1');
-    const raw = decoder.decode(bytes);
-    
-    // Extract text between BT (begin text) and ET (end text) markers
-    const textParts = [];
-    const btEtRegex = /BT[\s\S]*?ET/g;
-    const matches = raw.match(btEtRegex) || [];
-    
-    for (const block of matches) {
-      // Extract strings in parentheses (PDF text operators)
-      const strRegex = /\(([^)]{2,})\)/g;
-      let m;
-      while ((m = strRegex.exec(block)) !== null) {
-        const str = m[1].replace(/\\n/g, ' ').replace(/\\r/g, ' ').replace(/\\/g, '').trim();
-        if (str.length > 2 && /[a-zA-Z]/.test(str)) {
-          textParts.push(str);
-        }
-      }
-    }
-
-    const text = textParts.join(' ').replace(/\s+/g, ' ').trim().substring(0, 3000);
-
-    if (!text) return res.status(200).json({ text: '' });
+    const data = await pdfParse(buffer);
+    const text = data.text.trim().substring(0, 3000);
     
     res.status(200).json({ text });
   } catch (e) {
