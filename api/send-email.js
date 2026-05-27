@@ -6,11 +6,19 @@ function buildHtml(body, fromName, replyTo) {
     .replace(/\n/g, '<br>');
 
   const replyButton = replyTo ? `
-        <!-- Reply button -->
-        <tr><td style="padding:16px 40px 0">
-          <a href="mailto:${replyTo}" style="display:inline-block;background:#F8F6F1;border:1px solid #C0CBDC;color:#5B6E8F;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500">
-            &#9993; Reply to ${fromName.split(' ')[0]}
-          </a>
+        <tr><td style="padding:24px 40px 8px">
+          <table cellpadding="0" cellspacing="0">
+            <tr>
+              <td>
+                <a href="mailto:${replyTo}" style="display:inline-block;background:#5B6E8F;color:#ffffff;text-decoration:none;padding:11px 24px;border-radius:9px;font-size:13.5px;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">&#9993;&nbsp;&nbsp;Reply to ${fromName.split(' ')[0]}</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top:6px">
+                <span style="font-size:11.5px;color:#A09C96;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Replies go directly to ${replyTo}</span>
+              </td>
+            </tr>
+          </table>
         </td></tr>` : '';
 
   return `<!DOCTYPE html>
@@ -30,13 +38,10 @@ function buildHtml(body, fromName, replyTo) {
         ${replyButton}
 
         <!-- Pigeon footer -->
-        <tr><td style="background:#FFFFFF;border-radius:0 0 16px 16px;padding:24px 40px 28px;border:1px solid #e8e4dc;border-top:none;text-align:center">
+        <tr><td style="background:#FFFFFF;border-radius:0 0 16px 16px;padding:20px 40px 28px;border:1px solid #e8e4dc;border-top:none">
           <table cellpadding="0" cellspacing="0" style="margin:0 auto">
             <tr>
-              <td style="padding-right:8px;vertical-align:middle">
-                <img src="https://sendpigeon.uk/pigeon-icon.png" width="18" height="18" style="display:block;opacity:0.6" alt="Pigeon">
-              </td>
-              <td style="vertical-align:middle">
+              <td style="vertical-align:middle;text-align:center">
                 <span style="font-size:12px;color:#A09C96">Sent with </span><a href="https://sendpigeon.uk" style="font-size:12px;color:#5B6E8F;text-decoration:none;font-weight:500">Pigeon</a><span style="font-size:12px;color:#A09C96"> &mdash; investor updates, written and delivered.</span>
               </td>
             </tr>
