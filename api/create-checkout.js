@@ -1,8 +1,8 @@
 import Stripe from 'stripe';
 
 const PRICE_IDS = {
-  starter: 'price_1TaydhE0kKNqBE4hkLXwMfAl',
-  growth: 'price_1TayecE0kKNqBE4h8XRG8r5T'
+  starter: 'price_1TdQPXEFPXAZym7wTwRQKbd9',
+  growth: 'price_1TdQQNEFPXAZym7wNN4tDBkS'
 };
 
 export default async function handler(req, res) {
