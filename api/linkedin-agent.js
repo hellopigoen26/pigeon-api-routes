@@ -1,43 +1,35 @@
 // linkedin-agent.js
-// Pigeon LinkedIn Agent
+// Pigeon Content Agent — Blog + LinkedIn
 // Deploys to: /api/linkedin-agent on Vercel
 // Trigger: Vercel cron job — every Monday at 8am UK time
 // Cron schedule: 0 8 * * 1
-//
-// Add to vercel.json:
-// {
-//   "crons": [
-//     { "path": "/api/linkedin-agent", "schedule": "0 8 * * 1" }
-//   ]
-// }
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const CRON_SECRET = process.env.CRON_SECRET;
 
 // Campaign start date — weeks 1 and 2 already done
-// Agent starts delivering from week 3
-const CAMPAIGN_START = new Date('2026-06-15'); // Monday of week 3 (week 2 = 16 June, week 3 = 23 June)
+// Week 3 starts 23 June 2026
+const CAMPAIGN_START = new Date('2026-06-15');
 
-// Full 12-week campaign content
-// Weeks 1-2 included for completeness but agent starts at week 3
 const CAMPAIGN = [
   {
     week: 1,
     done: true,
     title: 'The fear of getting it wrong is why your investors aren\'t hearing from you',
-    post: null,
   },
   {
     week: 2,
     done: true,
     title: 'The YC investor update framework explained',
-    post: null,
   },
   {
     week: 3,
     phase: 'Foundation',
     title: 'What to include in a pre-seed investor update',
+    keyword: 'pre-seed investor update what to include',
     blogUrl: 'sendpigeon.uk/blog/pre-seed-investor-update',
+    blogAngle: 'Pre-seed founders think investor updates are for later. They are not. Their first investors took a bet before there was proof. Cover exactly what to include (and what to leave out) in a pre-seed update — metrics, highlight, lowlight, ask — and why starting now protects the next round.',
     post: `Pre-seed founders often think investor updates are for later.
 
 They are not.
@@ -59,7 +51,9 @@ sendpigeon.uk/investor-quiz`,
     week: 4,
     phase: 'Foundation',
     title: 'How often should founders send investor updates?',
+    keyword: 'how often send investor updates',
     blogUrl: 'sendpigeon.uk/blog/how-often-investor-updates',
+    blogAngle: 'Everyone has an opinion — monthly, quarterly, after milestones. The honest answer: cadence matters less than consistency. The founders who raise faster are the ones whose investors always know what is happening. Cover what the data actually says and why consistency beats frequency.',
     post: `Everyone has an opinion on how often you should send investor updates.
 
 Monthly. Quarterly. After every milestone. Only when you have good news.
@@ -81,7 +75,9 @@ sendpigeon.uk/investor-quiz`,
     week: 5,
     phase: 'Differentiation',
     title: 'How AI writes your investor update for you',
+    keyword: 'AI investor update writer tool',
     blogUrl: 'sendpigeon.uk/blog/ai-investor-update-writer',
+    blogAngle: 'Templates give you structure. You still have to write it. Pigeon is different — you fill in numbers and bullet points, Pigeon reads your deck, learns your voice, and writes the update. Cover why AI writing tools fail founders (generic output) vs what Pigeon actually does (learns voice, uses YC framework). This is the AI differentiation post nobody else is owning.',
     post: `Templates give you a structure. You still have to write it yourself.
 
 Pigeon is different.
@@ -96,131 +92,3 @@ sendpigeon.uk/investor-quiz`,
     hashtags: '#AI #StartupFounders #Fundraising #UKStartups #InvestorUpdates',
     cta: 'sendpigeon.uk/investor-quiz',
     imageNote: 'Warm off-white background. Two columns. Left: Template (sad face). Right: Pigeon (happy face). Simple illustration style. Pigeon logo bottom.',
-  },
-  {
-    week: 6,
-    phase: 'Differentiation',
-    title: 'Investor update generator vs template — what\'s the difference?',
-    blogUrl: 'sendpigeon.uk/blog/investor-update-generator-vs-template',
-    post: `An investor update template tells you what to write.
-
-An investor update generator writes it for you.
-
-The difference sounds small. It is not.
-
-A template still requires you to sit down, find the words, and hope it lands right. A generator takes your notes and does the work.
-
-We wrote about the difference — and why it matters for founders who are raising.
-
-[link: sendpigeon.uk/blog/investor-update-generator-vs-template]
-
-sendpigeon.uk/investor-quiz`,
-    hashtags: '#StartupFounders #Fundraising #AI #UKStartups #InvestorRelations',
-    cta: 'sendpigeon.uk/investor-quiz',
-    imageNote: 'Warm off-white background. Ink text: Template = still your problem. Blue-grey text: Generator = done. Pigeon logo bottom.',
-  },
-  {
-    week: 7,
-    phase: 'Differentiation',
-    title: 'Partnership week — Ollie Chipp / LBS',
-    blogUrl: null,
-    post: null,
-    hashtags: null,
-    cta: null,
-    imageNote: null,
-    specialNote: 'This is a partnership week, not a content week. Meeting with Ollie Chipp (Mill Capital / LBS). Partner page should be live at sendpigeon.uk/pigeon-partners.html. Leave quiz link as takeaway. No LinkedIn post this week — focus is on the meeting.',
-  },
-  {
-    week: 8,
-    phase: 'Differentiation',
-    title: 'How to write an investor update in two minutes',
-    blogUrl: 'sendpigeon.uk/blog/investor-update-two-minutes',
-    post: `Most founders think writing an investor update takes hours.
-
-It does not have to.
-
-Here is the exact process that gets founders from blank page to sent update in under two minutes — and why the founders who raise fastest have made it a habit.
-
-[link: sendpigeon.uk/blog/investor-update-two-minutes]
-
-Try it yourself free at sendpigeon.uk
-
-sendpigeon.uk/investor-quiz`,
-    hashtags: '#StartupFounders #Fundraising #UKStartups #InvestorUpdates #AI',
-    cta: 'sendpigeon.uk',
-    imageNote: 'Blue-grey background. Large white text: Two minutes. Warm off-white subline: From founder notes to investor inboxes. Pigeon logo bottom.',
-    specialNote: 'LinkedIn ads go live this week. First paid push pointing to quiz.',
-  },
-  {
-    week: 9,
-    phase: 'Authority',
-    title: 'What investors actually want to see in your update',
-    blogUrl: 'sendpigeon.uk/blog/what-investors-want',
-    post: `Founders spend a lot of time worrying about what to include in an investor update.
-
-The honest answer is simpler than you think.
-
-Investors want to know three things. How are the numbers. What went well. What did not. And they want a specific ask so they can actually help you.
-
-That is it. We spoke to investors and founders and wrote up exactly what lands and what does not.
-
-[link: sendpigeon.uk/blog/what-investors-want]
-
-sendpigeon.uk/investor-quiz`,
-    hashtags: '#Investors #StartupFounders #Fundraising #UKStartups #InvestorRelations',
-    cta: 'sendpigeon.uk/investor-quiz',
-    imageNote: 'Warm off-white background. Ink text: What investors actually want. Three blue-grey bullet lines below: Numbers. Honesty. An ask. Pigeon logo bottom.',
-  },
-  {
-    week: 10,
-    phase: 'Authority',
-    title: 'Best investor update tools for UK founders 2026',
-    blogUrl: 'sendpigeon.uk/blog/best-investor-update-tools-uk',
-    post: `There are a handful of tools that claim to help founders send better investor updates.
-
-We looked at all of them — what they do well and where they fall short.
-
-Visible. Paperstreet. Foundersuite. And Pigeon.
-
-The honest comparison founders actually need.
-
-[link: sendpigeon.uk/blog/best-investor-update-tools-uk]
-
-sendpigeon.uk/investor-quiz`,
-    hashtags: '#StartupFounders #Fundraising #UKStartups #InvestorUpdates #SaaS',
-    cta: 'sendpigeon.uk/investor-quiz',
-    imageNote: 'Warm off-white background. Comparison grid. Four tools listed. Pigeon column highlighted in blue-grey. Pigeon logo bottom.',
-  },
-  {
-    week: 11,
-    phase: 'Authority',
-    title: 'Investor update mistakes that cost founders their round',
-    blogUrl: 'sendpigeon.uk/blog/investor-update-mistakes',
-    post: `Some investor update mistakes are obvious. Sending nothing. Going dark for months.
-
-But some are subtler. Burying the ask. Leading with good news and hiding the bad. Writing for an audience of one.
-
-We pulled together the mistakes that actually cost founders their rounds — from Helen's own experience and from talking to investors.
-
-[link: sendpigeon.uk/blog/investor-update-mistakes]
-
-sendpigeon.uk/investor-quiz`,
-    hashtags: '#StartupFounders #Fundraising #UKStartups #InvestorRelations',
-    cta: 'sendpigeon.uk/investor-quiz',
-    imageNote: 'Warm off-white background. Ink headline: The mistakes that cost founders their round. Blue-grey subline: Are you making them? Pigeon logo bottom.',
-  },
-  {
-    week: 12,
-    phase: 'Authority',
-    title: 'Final post — celebrate the journey',
-    blogUrl: 'sendpigeon.uk',
-    post: `The founders raising faster are the ones keeping investors close.
-
-Pigeon has helped [X] founders send updates their investors actually read.
-
-Free to start. No card needed.
-
-sendpigeon.uk`,
-    hashtags: '#StartupFounders #Fundraising #UKStartups #InvestorRelations #AI',
-    cta: 'sendpigeon.uk',
-    imageNote: 'Warm off-white background.
