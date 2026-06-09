@@ -16,7 +16,7 @@ const CRON_SECRET = process.env.CRON_SECRET;
 
 // Campaign start date — weeks 1 and 2 already done
 // Agent starts delivering from week 3
-const CAMPAIGN_START = new Date('2026-06-22'); // Monday of week 3
+const CAMPAIGN_START = new Date('2026-06-15'); // Monday of week 3 (week 2 = 16 June, week 3 = 23 June)
 
 // Full 12-week campaign content
 // Weeks 1-2 included for completeness but agent starts at week 3
@@ -25,13 +25,13 @@ const CAMPAIGN = [
     week: 1,
     done: true,
     title: 'The fear of getting it wrong is why your investors aren\'t hearing from you',
-    post: null, // already published
+    post: null,
   },
   {
     week: 2,
     done: true,
     title: 'The YC investor update framework explained',
-    post: null, // already published
+    post: null,
   },
   {
     week: 3,
@@ -223,152 +223,4 @@ Free to start. No card needed.
 sendpigeon.uk`,
     hashtags: '#StartupFounders #Fundraising #UKStartups #InvestorRelations #AI',
     cta: 'sendpigeon.uk',
-    imageNote: 'Warm off-white background. Ink text: From founder notes to investor inboxes. In minutes. Pigeon logo centre. sendpigeon.uk bottom.',
-    specialNote: 'Update the [X] figure with real user count before publishing. Also: Jan McGinley outreach and WhatsApp broadcast this week.',
-  },
-];
-
-function getCurrentWeek() {
-  const now = new Date();
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const weeksSinceStart = Math.floor((now - CAMPAIGN_START) / msPerWeek);
-  // Campaign starts at week 3 (index 2)
-  const campaignWeek = weeksSinceStart + 3;
-  return Math.min(Math.max(campaignWeek, 3), 12);
-}
-
-function buildEmailHtml(weekData, weekNumber) {
-  const isSpecialWeek = !weekData.post;
-
-  if (isSpecialWeek) {
-    return `
-      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1A1916; padding: 32px 24px;">
-        <div style="margin-bottom: 24px;">
-          <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: #5B6E8F;">Pigeon LinkedIn Agent</span>
-        </div>
-        <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 8px 0;">Week ${weekNumber} — ${weekData.title}</h1>
-        <p style="font-size: 14px; color: #5B6E8F; margin: 0 0 32px 0;">Phase: ${weekData.phase}</p>
-        <div style="background: #F8F6F1; border-left: 3px solid #5B6E8F; padding: 20px 24px; margin-bottom: 32px; border-radius: 2px;">
-          <p style="margin: 0; font-size: 15px; line-height: 1.6;">${weekData.specialNote}</p>
-        </div>
-        <p style="font-size: 13px; color: #5B6E8F; border-top: 1px solid #E8E4DC; padding-top: 16px; margin: 0;">
-          Pigeon LinkedIn Agent · sendpigeon.uk
-        </p>
-      </div>
-    `;
-  }
-
-  const postHtml = weekData.post
-    .split('\n\n')
-    .map(p => `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.7;">${p.replace(/\n/g, '<br>')}</p>`)
-    .join('');
-
-  return `
-    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1A1916; padding: 32px 24px;">
-      
-      <div style="margin-bottom: 24px;">
-        <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: #5B6E8F;">Pigeon LinkedIn Agent · Week ${weekNumber} of 12</span>
-      </div>
-
-      <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 4px 0;">Your LinkedIn post is ready.</h1>
-      <p style="font-size: 15px; color: #5B6E8F; margin: 0 0 32px 0;">Copy, paste, publish. You're done.</p>
-
-      <div style="background: #F8F6F1; border: 1px solid #E8E4DC; border-radius: 4px; padding: 28px; margin-bottom: 32px;">
-        <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #5B6E8F; margin: 0 0 16px 0;">LinkedIn post — copy everything below</p>
-        <div style="border-top: 1px solid #E8E4DC; padding-top: 16px;">
-          ${postHtml}
-          <p style="margin: 0; font-size: 15px; line-height: 1.7; color: #5B6E8F;">${weekData.hashtags}</p>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 32px;">
-        <p style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #1A1916; margin: 0 0 12px 0;">This week's checklist</p>
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr>
-            <td style="padding: 10px 0; border-bottom: 1px solid #E8E4DC; font-size: 14px;">📋 Post copied to LinkedIn</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #E8E4DC; font-size: 14px; text-align: right; color: #5B6E8F;">linkedin.com/company/sendpigeonuk</td>
-          </tr>
-          ${weekData.blogUrl ? `
-          <tr>
-            <td style="padding: 10px 0; border-bottom: 1px solid #E8E4DC; font-size: 14px;">✍️ Blog post live</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #E8E4DC; font-size: 14px; text-align: right; color: #5B6E8F;">${weekData.blogUrl}</td>
-          </tr>
-          ` : ''}
-          <tr>
-            <td style="padding: 10px 0; font-size: 14px;">🖼️ Image created</td>
-            <td style="padding: 10px 0; font-size: 14px; text-align: right; color: #5B6E8F;">See brief below</td>
-          </tr>
-        </table>
-      </div>
-
-      ${weekData.imageNote ? `
-      <div style="background: #F8F6F1; border-radius: 4px; padding: 20px 24px; margin-bottom: 32px;">
-        <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #5B6E8F; margin: 0 0 8px 0;">Image brief</p>
-        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #1A1916;">${weekData.imageNote}</p>
-      </div>
-      ` : ''}
-
-      ${weekData.specialNote ? `
-      <div style="border-left: 3px solid #5B6E8F; padding-left: 16px; margin-bottom: 32px;">
-        <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #5B6E8F; margin: 0 0 8px 0;">Note for this week</p>
-        <p style="margin: 0; font-size: 14px; line-height: 1.6;">${weekData.specialNote}</p>
-      </div>
-      ` : ''}
-
-      <p style="font-size: 13px; color: #5B6E8F; border-top: 1px solid #E8E4DC; padding-top: 16px; margin: 0;">
-        Pigeon LinkedIn Agent · <a href="https://sendpigeon.uk" style="color: #5B6E8F;">sendpigeon.uk</a>
-      </p>
-
-    </div>
-  `;
-}
-
-export default async function handler(req, res) {
-  // Security check — only allow cron or manual trigger with secret
-  const authHeader = req.headers['authorization'];
-  if (authHeader !== `Bearer ${CRON_SECRET}`) {
-    return res.status(401).json({ error: 'Unauthorised' });
-  }
-
-  try {
-    const weekNumber = getCurrentWeek();
-
-    // Campaign finished
-    if (weekNumber > 12) {
-      return res.status(200).json({ message: '12-week campaign complete. No post to send.' });
-    }
-
-    const weekData = CAMPAIGN[weekNumber - 1];
-
-    const emailHtml = buildEmailHtml(weekData, weekNumber);
-
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Pigeon Agent <hello@mail.sendpigeon.uk>',
-        to: 'hellosendpigeon@gmail.com',
-        subject: `Week ${weekNumber} LinkedIn post ready — ${weekData.title}`,
-        html: emailHtml,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Resend error: ${error}`);
-    }
-
-    return res.status(200).json({
-      success: true,
-      week: weekNumber,
-      title: weekData.title,
-    });
-
-  } catch (err) {
-    console.error('LinkedIn agent error:', err);
-    return res.status(500).json({ error: err.message });
-  }
-}
+    imageNote: 'Warm off-white background.
