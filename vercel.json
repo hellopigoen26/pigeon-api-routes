@@ -8,6 +8,10 @@
     {
       "path": "/api/linkedin-agent",
       "schedule": "0 8 * * 1"
+    },
+    {
+      "path": "/api/investor-sourcing-agent",
+      "schedule": "0 6 * * 0"
     }
   ]
 }
