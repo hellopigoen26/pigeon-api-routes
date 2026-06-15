@@ -72,6 +72,7 @@ function buildHtml(body, fromName, company, logo, replyTo, updateId) {
   const metrics = parseMetrics(metricsRaw);
 
   const displayName = company || fromName;
+  const logoUrl = logo && !logo.startsWith('data:') ? logo : null;
 
   const metricsBlock = metrics.length > 0 ? `
     <tr><td style="background:#FFFFFF;padding:24px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
@@ -128,7 +129,7 @@ function buildHtml(body, fromName, company, logo, replyTo, updateId) {
                 <p style="margin:0;font-size:12px;color:#A09C96;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Investor update</p>
                 <p style="margin:4px 0 0;font-size:18px;font-weight:600;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${displayName}</p>
               </td>
-              ${logo ? `<td align="right"><img src="${logo}" width="40" height="40" alt="${displayName}" style="display:inline-block;border-radius:6px;object-fit:contain"></td>` : ''}
+              ${logoUrl ? `<td align="right"><img src="${logoUrl}" width="40" height="40" alt="${displayName}" style="display:inline-block;border-radius:6px;object-fit:contain"></td>` : ''}
             </tr>
           </table>
         </td></tr>
@@ -167,7 +168,8 @@ function buildHtml(body, fromName, company, logo, replyTo, updateId) {
         <!-- FOOTER -->
         <tr><td style="background:#F4F4F2;border-radius:0 0 16px 16px;padding:20px 40px;border:1px solid #e8e4dc;border-top:none;text-align:center">
           <img src="https://sendpigeon.uk/pigeon-icon.png" width="20" height="20" alt="Pigeon" style="display:inline-block;margin-bottom:6px;opacity:0.5"><br>
-          <span style="font-size:11px;color:#C0BBB5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Sent with </span><a href="https://sendpigeon.uk" style="font-size:11px;color:#A09C96;text-decoration:none;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Pigeon</a>
+          <span style="font-size:11px;color:#C0BBB5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Sent with <a href="https://sendpigeon.uk" style="font-size:11px;color:#A09C96;text-decoration:underline;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Pigeon</a></span>
+          ${trackingPixel}
         </td></tr>
 
       </table>
