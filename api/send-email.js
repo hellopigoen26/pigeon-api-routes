@@ -19,14 +19,21 @@ function parseMetrics(metricsText) {
     });
 }
 
-function parseIntro(body) {
+function parseGreetingAndIntro(body) {
   const lines = body.split('\n');
+  let greeting = '';
   const introParts = [];
+  let pastGreeting = false;
   for (const line of lines) {
     if (/^(Metrics|How you can help|Highlights|Lowlights|Focus for next month)/i.test(line.trim())) break;
-    if (line.trim()) introParts.push(line.trim());
+    if (!pastGreeting && /^hi /i.test(line.trim())) {
+      greeting = line.trim();
+      pastGreeting = true;
+    } else if (line.trim()) {
+      introParts.push(line.trim());
+    }
   }
-  return introParts.join(' ');
+  return { greeting, intro: introParts.join(' ') };
 }
 
 function parseSignoff(body) {
@@ -54,8 +61,8 @@ function sectionBlock(label, content) {
     </td></tr>`;
 }
 
-function buildHtml(body, fromName, companyName, replyTo, updateId) {
-  const intro = parseIntro(body);
+function buildHtml(body, fromName, company, logo, replyTo, updateId) {
+  const { greeting, intro } = parseGreetingAndIntro(body);
   const metricsRaw = parseSection(body, 'Metrics');
   const ask = parseSection(body, 'How you can help');
   const highlights = parseSection(body, 'Highlights');
@@ -64,7 +71,7 @@ function buildHtml(body, fromName, companyName, replyTo, updateId) {
   const signoff = parseSignoff(body);
   const metrics = parseMetrics(metricsRaw);
 
-  const displayName = companyName || fromName;
+  const displayName = company || fromName;
 
   const metricsBlock = metrics.length > 0 ? `
     <tr><td style="background:#FFFFFF;padding:24px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
@@ -90,7 +97,7 @@ function buildHtml(body, fromName, companyName, replyTo, updateId) {
       <table cellpadding="0" cellspacing="0">
         <tr>
           <td>
-            <a href="mailto:${replyTo}" style="display:inline-block;background:#5B6E8F;color:#ffffff;text-decoration:none;padding:11px 24px;border-radius:9px;font-size:13.5px;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">&#9993;&nbsp;&nbsp;Reply</a>
+            <a href="mailto:${replyTo}" style="display:inline-block;background:#1A1916;color:#ffffff;text-decoration:none;padding:11px 24px;border-radius:9px;font-size:13.5px;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">&#9993;&nbsp;&nbsp;Reply</a>
           </td>
         </tr>
         <tr>
@@ -108,30 +115,33 @@ function buildHtml(body, fromName, companyName, replyTo, updateId) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#F8F6F1;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F8F6F1;padding:40px 20px">
+<body style="margin:0;padding:0;background:#F4F4F2;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F4F4F2;padding:40px 20px">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%">
 
         <!-- HEADER -->
-        <tr><td style="background:#5B6E8F;border-radius:16px 16px 0 0;padding:20px 40px">
+        <tr><td style="background:#FFFFFF;border-radius:16px 16px 0 0;padding:24px 40px;border:1px solid #e8e4dc;border-bottom:1px solid #F0EDE6">
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
               <td>
-                <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.65);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Investor update</p>
-                <p style="margin:4px 0 0;font-size:18px;font-weight:600;color:#ffffff;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${displayName}</p>
+                <p style="margin:0;font-size:12px;color:#A09C96;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Investor update</p>
+                <p style="margin:4px 0 0;font-size:18px;font-weight:600;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${displayName}</p>
               </td>
-              <td align="right">
-                <span style="font-size:12px;color:rgba(255,255,255,0.5);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Pigeon</span>
-              </td>
+              ${logo ? `<td align="right"><img src="${logo}" width="40" height="40" alt="${displayName}" style="display:inline-block;border-radius:6px;object-fit:contain"></td>` : ''}
             </tr>
           </table>
         </td></tr>
 
+        <!-- GREETING -->
+        ${greeting ? `<tr><td style="background:#FFFFFF;padding:32px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
+          <p style="margin:0;font-size:15px;line-height:1.8;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${greeting}</p>
+        </td></tr>` : ''}
+
         <!-- INTRO -->
-        <tr><td style="background:#FFFFFF;padding:32px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
-          <p style="margin:0;font-size:15px;line-height:1.8;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${intro || ''}</p>
-        </td></tr>
+        ${intro ? `<tr><td style="background:#FFFFFF;padding:16px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
+          <p style="margin:0;font-size:15px;line-height:1.8;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${intro}</p>
+        </td></tr>` : ''}
 
         <!-- METRICS -->
         ${metricsBlock}
@@ -155,10 +165,9 @@ function buildHtml(body, fromName, companyName, replyTo, updateId) {
         ${replyButton}
 
         <!-- FOOTER -->
-        <tr><td style="background:#F8F6F1;border-radius:0 0 16px 16px;padding:20px 40px;border:1px solid #e8e4dc;border-top:1px solid #F0EDE6;text-align:center">
-          <img src="https://sendpigeon.uk/pigeon-icon.png" width="22" height="22" alt="Pigeon" style="display:inline-block;margin-bottom:8px"><br>
-          <span style="font-size:12px;color:#A09C96;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Sent with </span><a href="https://sendpigeon.uk" style="font-size:12px;color:#5B6E8F;text-decoration:none;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Pigeon</a>
-          ${trackingPixel}
+        <tr><td style="background:#F4F4F2;border-radius:0 0 16px 16px;padding:20px 40px;border:1px solid #e8e4dc;border-top:none;text-align:center">
+          <img src="https://sendpigeon.uk/pigeon-icon.png" width="20" height="20" alt="Pigeon" style="display:inline-block;margin-bottom:6px;opacity:0.5"><br>
+          <span style="font-size:11px;color:#C0BBB5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Sent with </span><a href="https://sendpigeon.uk" style="font-size:11px;color:#A09C96;text-decoration:none;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Pigeon</a>
         </td></tr>
 
       </table>
@@ -174,11 +183,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const { to, subject, body, fromName, companyName, replyTo, updateId } = req.body;
+  const { to, subject, body, fromName, company, logo, replyTo, updateId } = req.body;
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const htmlBody = buildHtml(body, fromName, companyName, replyTo, updateId);
+  const htmlBody = buildHtml(body, fromName, company, logo, replyTo, updateId);
   const { data, error } = await resend.emails.send({
-    from: `${companyName || fromName} via Pigeon <updates@mail.sendpigeon.uk>`,
+    from: `${company || fromName} via Pigeon <updates@mail.sendpigeon.uk>`,
     to: to,
     subject: subject,
     html: htmlBody,
