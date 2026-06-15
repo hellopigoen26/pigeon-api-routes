@@ -44,17 +44,13 @@ function metricRow(label, value) {
     </tr>`;
 }
 
-function sectionBlock(label, colour, bgColour, content) {
+function sectionBlock(label, content) {
   const lines = content.split('\n').filter(l => l.trim());
-  const html = lines.map(l => `<p style="margin:0 0 10px 0;font-size:15px;line-height:1.75;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${l.trim()}</p>`).join('');
+  const html = lines.map(l => `<p style="margin:0 0 10px 0;font-size:15px;line-height:1.8;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${l.trim()}</p>`).join('');
   return `
-    <tr><td style="background:#FFFFFF;padding:16px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:${bgColour};border-left:3px solid ${colour}">
-        <tr><td style="padding:18px 20px">
-          <p style="margin:0 0 10px 0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:${colour};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${label}</p>
-          ${html}
-        </td></tr>
-      </table>
+    <tr><td style="background:#FFFFFF;padding:24px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
+      <p style="margin:0 0 10px 0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:#888888;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${label}</p>
+      ${html}
     </td></tr>`;
 }
 
@@ -72,16 +68,16 @@ function buildHtml(body, fromName, companyName, replyTo, updateId) {
 
   const metricsBlock = metrics.length > 0 ? `
     <tr><td style="background:#FFFFFF;padding:24px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
-      <p style="margin:0 0 12px 0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#5B6E8F;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Metrics</p>
+      <p style="margin:0 0 12px 0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:#888888;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Metrics</p>
       <table width="100%" cellpadding="0" cellspacing="0">
         ${metrics.map(m => metricRow(m.label, m.value)).join('')}
       </table>
     </td></tr>` : '';
 
-  const askBlock = ask ? sectionBlock('How you can help', '#5B6E8F', '#EDF0F6', ask) : '';
-  const highlightsBlock = highlights ? sectionBlock('Highlights', '#2E7D4F', '#F0F7F3', highlights) : '';
-  const lowlightsBlock = lowlights ? sectionBlock('Lowlights', '#A05C3B', '#FBF3EF', lowlights) : '';
-  const focusBlock = focus ? sectionBlock('Focus for next month', '#7A6E8A', '#F4F2F7', focus) : '';
+  const askBlock = ask ? sectionBlock('How you can help', ask) : '';
+  const highlightsBlock = highlights ? sectionBlock('Highlights', highlights) : '';
+  const lowlightsBlock = lowlights ? sectionBlock('Lowlights', lowlights) : '';
+  const focusBlock = focus ? sectionBlock('Focus for next month', focus) : '';
 
   const signoffBlock = signoff ? `
     <tr><td style="background:#FFFFFF;padding:28px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
@@ -159,19 +155,9 @@ function buildHtml(body, fromName, companyName, replyTo, updateId) {
         ${replyButton}
 
         <!-- FOOTER -->
-        <tr><td style="background:#F8F6F1;border-radius:0 0 16px 16px;padding:20px 40px;border:1px solid #e8e4dc;border-top:1px solid #F0EDE6">
-          <table cellpadding="0" cellspacing="0" style="margin:0 auto;text-align:center">
-            <tr>
-              <td style="text-align:center;padding-bottom:8px">
-                <img src="https://sendpigeon.uk/pigeon-icon.png" width="24" height="24" alt="Pigeon" style="display:inline-block;vertical-align:middle">
-              </td>
-            </tr>
-            <tr>
-              <td style="text-align:center">
-                <span style="font-size:12px;color:#A09C96;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Sent with </span><a href="https://sendpigeon.uk" style="font-size:12px;color:#5B6E8F;text-decoration:none;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Pigeon</a><span style="font-size:12px;color:#A09C96;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif"> &mdash; investor updates, written and delivered.</span>
-              </td>
-            </tr>
-          </table>
+        <tr><td style="background:#F8F6F1;border-radius:0 0 16px 16px;padding:20px 40px;border:1px solid #e8e4dc;border-top:1px solid #F0EDE6;text-align:center">
+          <img src="https://sendpigeon.uk/pigeon-icon.png" width="22" height="22" alt="Pigeon" style="display:inline-block;margin-bottom:8px"><br>
+          <span style="font-size:12px;color:#A09C96;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Sent with </span><a href="https://sendpigeon.uk" style="font-size:12px;color:#5B6E8F;text-decoration:none;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Pigeon</a>
           ${trackingPixel}
         </td></tr>
 
