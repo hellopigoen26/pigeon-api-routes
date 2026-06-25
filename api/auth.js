@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 
 const SB_URL = 'https://vpguedobiinnxcxrmugq.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwZ3VlZG9iaWlubnhjeHJtdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NDQ2MjcsImV4cCI6MjA5NDUyMDYyN30.uVS6GTada9hwazNs1RLpLPQ9rJHLXN4oeGqzhVsPtZI';
+const SB_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000;
@@ -16,7 +16,7 @@ function getIp(req) {
 
 async function sbGet(table, col, val) {
   const res = await fetch(`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}&select=*`, {
-    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+    headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': `Bearer ${SB_SERVICE_KEY}` }
   });
   return res.json();
 }
@@ -24,7 +24,7 @@ async function sbGet(table, col, val) {
 async function sbUpdate(table, id, data) {
   const res = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: 'PATCH',
-    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+    headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': `Bearer ${SB_SERVICE_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   return res.ok;
@@ -33,7 +33,7 @@ async function sbUpdate(table, id, data) {
 async function sbInsert(table, data) {
   const res = await fetch(`${SB_URL}/rest/v1/${table}`, {
     method: 'POST',
-    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+    headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': `Bearer ${SB_SERVICE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
     body: JSON.stringify(data)
   });
   const json = await res.json();
@@ -44,7 +44,7 @@ async function sbInsert(table, data) {
 async function sbDelete(table, col, val) {
   await fetch(`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`, {
     method: 'DELETE',
-    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+    headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': `Bearer ${SB_SERVICE_KEY}` }
   });
 }
 
@@ -62,7 +62,6 @@ async function checkRateLimit(ip) {
     return { blocked: true, minutesLeft, entry };
   }
 
-  // Lock expired (or never set) — treat as not blocked
   return { blocked: false, entry };
 }
 
@@ -70,7 +69,6 @@ async function recordFailure(ip, entry) {
   const now = Date.now();
 
   if (!entry) {
-    // First failure for this IP
     await sbInsert('login_attempts', {
       ip,
       attempt_count: 1,
@@ -80,7 +78,6 @@ async function recordFailure(ip, entry) {
     return 1;
   }
 
-  // If the previous lock has expired, reset the count
   const lockExpired = entry.locked_until && now >= new Date(entry.locked_until).getTime();
   const newCount = lockExpired ? 1 : (entry.attempt_count || 0) + 1;
   const lockedUntil = newCount >= MAX_ATTEMPTS ? new Date(now + LOCKOUT_MS).toISOString() : null;
