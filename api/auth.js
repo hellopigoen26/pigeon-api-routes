@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs');
 const SB_URL = 'https://vpguedobiinnxcxrmugq.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwZ3VlZG9iaWlubnhjeHJtdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NDQ2MjcsImV4cCI6MjA5NDUyMDYyN30.uVS6GTada9hwazNs1RLpLPQ9rJHLXN4oeGqzhVsPtZI';
 
-const loginAttempts = {};
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000;
 
@@ -13,33 +12,6 @@ function getIp(req) {
     req.socket?.remoteAddress ||
     'unknown'
   );
-}
-
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = loginAttempts[ip];
-  if (!entry) return { blocked: false };
-  if (entry.lockedUntil && now < entry.lockedUntil) {
-    const minutesLeft = Math.ceil((entry.lockedUntil - now) / 60000);
-    return { blocked: true, minutesLeft };
-  }
-  if (entry.lockedUntil && now >= entry.lockedUntil) {
-    delete loginAttempts[ip];
-  }
-  return { blocked: false };
-}
-
-function recordFailure(ip) {
-  const now = Date.now();
-  if (!loginAttempts[ip]) loginAttempts[ip] = { count: 0 };
-  loginAttempts[ip].count += 1;
-  if (loginAttempts[ip].count >= MAX_ATTEMPTS) {
-    loginAttempts[ip].lockedUntil = now + LOCKOUT_MS;
-  }
-}
-
-function clearFailures(ip) {
-  delete loginAttempts[ip];
 }
 
 async function sbGet(table, col, val) {
@@ -69,6 +41,65 @@ async function sbInsert(table, data) {
   return Array.isArray(json) ? json[0] : json;
 }
 
+async function sbDelete(table, col, val) {
+  await fetch(`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+  });
+}
+
+// ---- Rate limiting (Supabase-backed, persists across Vercel instances) ----
+
+async function checkRateLimit(ip) {
+  const rows = await sbGet('login_attempts', 'ip', ip);
+  if (!rows || rows.error || !rows.length) return { blocked: false };
+
+  const entry = rows[0];
+  const now = Date.now();
+
+  if (entry.locked_until && now < new Date(entry.locked_until).getTime()) {
+    const minutesLeft = Math.ceil((new Date(entry.locked_until).getTime() - now) / 60000);
+    return { blocked: true, minutesLeft, entry };
+  }
+
+  // Lock expired (or never set) — treat as not blocked
+  return { blocked: false, entry };
+}
+
+async function recordFailure(ip, entry) {
+  const now = Date.now();
+
+  if (!entry) {
+    // First failure for this IP
+    await sbInsert('login_attempts', {
+      ip,
+      attempt_count: 1,
+      locked_until: null,
+      updated_at: new Date(now).toISOString()
+    });
+    return 1;
+  }
+
+  // If the previous lock has expired, reset the count
+  const lockExpired = entry.locked_until && now >= new Date(entry.locked_until).getTime();
+  const newCount = lockExpired ? 1 : (entry.attempt_count || 0) + 1;
+  const lockedUntil = newCount >= MAX_ATTEMPTS ? new Date(now + LOCKOUT_MS).toISOString() : null;
+
+  await sbUpdate('login_attempts', entry.id, {
+    attempt_count: newCount,
+    locked_until: lockedUntil,
+    updated_at: new Date(now).toISOString()
+  });
+
+  return newCount;
+}
+
+async function clearFailures(ip) {
+  await sbDelete('login_attempts', 'ip', ip);
+}
+
+// ---- Handler ----
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -82,7 +113,7 @@ module.exports = async function handler(req, res) {
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
     const ip = getIp(req);
-    const { blocked, minutesLeft } = checkRateLimit(ip);
+    const { blocked, minutesLeft, entry } = await checkRateLimit(ip);
     if (blocked) {
       return res.status(429).json({
         error: `Too many failed attempts. Please try again in ${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}.`
@@ -91,7 +122,7 @@ module.exports = async function handler(req, res) {
 
     const users = await sbGet('users', 'email', email);
     if (!users || users.error || !users.length) {
-      recordFailure(ip);
+      await recordFailure(ip, entry);
       return res.status(401).json({ error: 'No account found. Sign up instead?' });
     }
 
@@ -115,15 +146,15 @@ module.exports = async function handler(req, res) {
     }
 
     if (!valid) {
-      recordFailure(ip);
-      const remaining = MAX_ATTEMPTS - (loginAttempts[ip]?.count || 0);
+      const newCount = await recordFailure(ip, entry);
+      const remaining = MAX_ATTEMPTS - newCount;
       const warningMsg = remaining <= 2 && remaining > 0
         ? ` ${remaining} attempt${remaining === 1 ? '' : 's'} left before your account is temporarily locked.`
         : '';
       return res.status(401).json({ error: `Incorrect password. Please try again.${warningMsg}` });
     }
 
-    clearFailures(ip);
+    await clearFailures(ip);
     delete user.password_hash;
     return res.status(200).json({ user });
   }
