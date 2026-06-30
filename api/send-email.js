@@ -53,11 +53,11 @@ function metricRow(label, value) {
 
 function sectionBlock(label, content) {
   const lines = content.split('\n').filter(l => l.trim());
-  const html = lines.map(l => `<p style="margin:0 0 10px 0;width:100%;box-sizing:border-box;font-size:15px;line-height:1.8;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${l.trim()}</p>`).join('');
+  const html = lines.map(l => `<p style="margin:0 0 10px 0;width:100%;box-sizing:border-box;font-size:15px;line-height:1.8;mso-line-height-rule:exactly;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${l.trim()}</p>`).join('');
   return `
     <tr><td style="background:#FFFFFF;padding:24px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
       <p style="margin:0 0 10px 0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:#888888;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${label}</p>
-      <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="width:100%">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="width:100%;font-size:15px;line-height:1.8;mso-line-height-rule:exactly;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
       ${html}
       </td></tr></table>
     </td></tr>`;
@@ -138,12 +138,12 @@ function buildHtml(body, fromName, company, logo, replyTo, updateId) {
 
         <!-- GREETING -->
         ${greeting ? `<tr><td style="background:#FFFFFF;padding:32px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
-          <p style="margin:0;width:100%;box-sizing:border-box;font-size:15px;line-height:1.8;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${greeting}</p>
+          <p style="margin:0;width:100%;box-sizing:border-box;font-size:15px;line-height:1.8;mso-line-height-rule:exactly;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${greeting}</p>
         </td></tr>` : ''}
 
         <!-- INTRO -->
         ${intro ? `<tr><td style="background:#FFFFFF;padding:16px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
-          <p style="margin:0;width:100%;box-sizing:border-box;font-size:15px;line-height:1.8;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${intro}</p>
+          <p style="margin:0;width:100%;box-sizing:border-box;font-size:15px;line-height:1.8;mso-line-height-rule:exactly;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${intro}</p>
         </td></tr>` : ''}
 
         <!-- METRICS -->
