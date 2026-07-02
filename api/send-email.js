@@ -63,7 +63,7 @@ function sectionBlock(label, content) {
     </td></tr>`;
 }
 
-function buildHtml(body, fromName, company, logo, replyTo, updateId) {
+function buildHtml(body, fromName, company, logo, updateId) {
   const { greeting, intro } = parseGreetingAndIntro(body);
   const metricsRaw = parseSection(body, 'Metrics');
   const ask = parseSection(body, 'How you can help');
@@ -93,22 +93,6 @@ function buildHtml(body, fromName, company, logo, replyTo, updateId) {
     <tr><td style="background:#FFFFFF;padding:28px 40px 0;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
       <p style="margin:0;font-size:15px;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Kind regards,</p>
       ${signoff.map(l => `<p style="margin:6px 0 0;font-size:15px;color:#1A1916;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">${l}</p>`).join('')}
-    </td></tr>` : '';
-
-  const replyButton = replyTo ? `
-    <tr><td style="background:#FFFFFF;padding:28px 40px 8px;border-left:1px solid #e8e4dc;border-right:1px solid #e8e4dc">
-      <table cellpadding="0" cellspacing="0">
-        <tr>
-          <td>
-            <a href="mailto:${replyTo}" style="display:inline-block;background:#1A1916;color:#ffffff;text-decoration:none;padding:11px 24px;border-radius:9px;font-size:13.5px;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">&#9993;&nbsp;&nbsp;Reply</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding-top:6px">
-            <span style="font-size:11.5px;color:#A09C96;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Replies go directly to ${replyTo}</span>
-          </td>
-        </tr>
-      </table>
     </td></tr>` : '';
 
   const trackingPixel = updateId
@@ -164,9 +148,6 @@ function buildHtml(body, fromName, company, logo, replyTo, updateId) {
         <!-- SIGNOFF -->
         ${signoffBlock}
 
-        <!-- REPLY BUTTON -->
-        ${replyButton}
-
         <!-- FOOTER -->
         <tr><td style="background:#F4F4F2;border-radius:0 0 16px 16px;padding:20px 40px;border:1px solid #e8e4dc;border-top:none;text-align:center">
           <img src="https://sendpigeon.uk/pigeon-icon.png" width="20" height="20" alt="Pigeon" style="display:inline-block;margin-bottom:6px;opacity:0.5"><br>
@@ -189,13 +170,22 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const { to, subject, body, fromName, company, logo, replyTo, updateId } = req.body;
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const htmlBody = buildHtml(body, fromName, company, logo, replyTo, updateId);
+  const htmlBody = buildHtml(body, fromName, company, logo, updateId);
+
+  // Replies route back into Pigeon via a per-update address on the reply
+  // subdomain. If we somehow don't have an updateId, fall back to the
+  // founder's own email so sending never breaks.
+  const replyToAddress = updateId
+    ? `u-${updateId}@reply.sendpigeon.uk`
+    : replyTo;
+
   const { data, error } = await resend.emails.send({
     from: `${company || fromName} via Pigeon <updates@mail.sendpigeon.uk>`,
     to: to,
     subject: subject,
     html: htmlBody,
     text: body,
+    reply_to: replyToAddress,
   });
   if (error) return res.status(400).json({ error });
   res.status(200).json({ data });
